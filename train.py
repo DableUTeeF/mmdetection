@@ -83,4 +83,4 @@ if __name__ == '__main__':
 
     # Create work_dir
     mmcv.mkdir_or_exist(osp.abspath(cfg.work_dir))
-    train_detector(model, datasets, cfg, distributed=False, validate=True)
+    train_detector(model, datasets, cfg, distributed=False, validate=False)
