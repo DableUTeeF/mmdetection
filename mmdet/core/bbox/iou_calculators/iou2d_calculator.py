@@ -96,6 +96,9 @@ def bbox_overlaps(bboxes1, bboxes2, mode='iou', is_aligned=False, eps=1e-6):
     assert bboxes1.shape[:-2] == bboxes2.shape[:-2]
     batch_shape = bboxes1.shape[:-2]
 
+    bboxes1 = bboxes1.float()
+    bboxes2 = bboxes2.float()
+
     rows = bboxes1.size(-2)
     cols = bboxes2.size(-2)
     if is_aligned:

@@ -14,86 +14,37 @@ from mmdet.apis import train_detector
 
 
 @DATASETS.register_module()
-class KittiTinyDataset(CustomDataset):
-    CLASSES = ('Car', 'Pedestrian', 'Cyclist')
-
-    def load_annotations(self, ann_file):
-        cat2label = {k: i for i, k in enumerate(self.CLASSES)}
-        # load image list from file
-        image_list = mmcv.list_from_file(self.ann_file)
-
-        data_infos = []
-        # convert annotations to middle format
-        for image_id in image_list:
-            filename = f'{self.img_prefix}/{image_id}.jpeg'
-            image = mmcv.imread(filename)
-            height, width = image.shape[:2]
-
-            data_info = dict(filename=f'{image_id}.jpeg', width=width, height=height)
-
-            # load annotations
-            label_prefix = self.img_prefix.replace('image_2', 'label_2')
-            lines = mmcv.list_from_file(osp.join(label_prefix, f'{image_id}.txt'))
-
-            content = [line.strip().split(' ') for line in lines]
-            bbox_names = [x[0] for x in content]
-            bboxes = [[float(info) for info in x[4:8]] for x in content]
-
-            gt_bboxes = []
-            gt_labels = []
-            gt_bboxes_ignore = []
-            gt_labels_ignore = []
-
-            # filter 'DontCare'
-            for bbox_name, bbox in zip(bbox_names, bboxes):
-                if bbox_name in cat2label:
-                    gt_labels.append(cat2label[bbox_name])
-                    gt_bboxes.append(bbox)
-                else:
-                    gt_labels_ignore.append(-1)
-                    gt_bboxes_ignore.append(bbox)
-
-            data_anno = dict(
-                bboxes=np.array(gt_bboxes, dtype=np.float32).reshape(-1, 4),
-                labels=np.array(gt_labels, dtype=np.long),
-                bboxes_ignore=np.array(gt_bboxes_ignore,
-                                       dtype=np.float32).reshape(-1, 4),
-                labels_ignore=np.array(gt_labels_ignore, dtype=np.long))
-
-            data_info.update(ann=data_anno)
-            data_infos.append(data_info)
-
-        return data_infos
-
+class AlgeaDataset(CustomDataset):
+    CLASSES = ('mif', 'ov')
 
 if __name__ == '__main__':
+    dataset = AlgeaDataset('anns/train.json', [])
+    x = dataset[0]
 
-    cfg = Config.fromfile('./configs/faster_rcnn/faster_rcnn_r50_caffe_fpn_mstrain_1x_coco.py')
+    cfg = Config.fromfile('./configs/retinanet/retinanet_r50_fpn_2x_coco.py')
 
     # Modify dataset type and path
-    cfg.dataset_type = 'KittiTinyDataset'
-    cfg.data_root = 'kitti_tiny/'
+    cfg.dataset_type = 'AlgeaDataset'
+    cfg.data_root = ''
 
-    cfg.data.test.type = 'KittiTinyDataset'
-    cfg.data.test.data_root = 'kitti_tiny/'
-    cfg.data.test.ann_file = 'train.txt'
-    cfg.data.test.img_prefix = 'training/image_2'
+    cfg.data.test.type = 'AlgeaDataset'
+    cfg.data.test.data_root = ''
+    cfg.data.test.ann_file = '/home/palm/PycharmProjects/mmdetection/anns/test.json'
+    cfg.data.test.img_prefix = ''
 
-    cfg.data.train.type = 'KittiTinyDataset'
-    cfg.data.train.data_root = 'kitti_tiny/'
-    cfg.data.train.ann_file = 'train.txt'
-    cfg.data.train.img_prefix = 'training/image_2'
+    cfg.data.train.type = 'AlgeaDataset'
+    cfg.data.train.data_root = ''
+    cfg.data.train.ann_file = '/home/palm/PycharmProjects/mmdetection/anns/train.json'
+    cfg.data.train.img_prefix = ''
 
-    cfg.data.val.type = 'KittiTinyDataset'
-    cfg.data.val.data_root = 'kitti_tiny/'
-    cfg.data.val.ann_file = 'val.txt'
-    cfg.data.val.img_prefix = 'training/image_2'
+    cfg.data.val.type = 'AlgeaDataset'
+    cfg.data.val.data_root = ''
+    cfg.data.val.ann_file = '/home/palm/PycharmProjects/mmdetection/anns/test.json'
+    cfg.data.val.img_prefix = ''
 
-    # modify num classes of the model in box head
-    cfg.model.roi_head.bbox_head.num_classes = 3
     # We can still use the pre-trained Mask RCNN model though we do not need to
     # use the mask branch
-    cfg.load_from = 'checkpoints/mask_rcnn_r50_caffe_fpn_mstrain-poly_3x_coco_bbox_mAP-0.408__segm_mAP-0.37_20200504_163245-42aa3d00.pth'
+    cfg.load_from = 'checkpoints/retinanet_r50_fpn_2x_coco_20200131-fdb43119.pth'
 
     # Set up working dir to save files and logs.
     cfg.work_dir = './tutorial_exps'
