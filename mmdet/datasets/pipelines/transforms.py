@@ -390,7 +390,8 @@ class RandomFlip(object):
         Returns:
             numpy.ndarray: Flipped bounding boxes.
         """
-
+        if isinstance(bboxes, list):
+            bboxes = np.array(bboxes)
         assert bboxes.shape[-1] % 4 == 0
         flipped = bboxes.copy()
         if direction == 'horizontal':
@@ -697,7 +698,10 @@ class RandomCrop(object):
             # label fields. e.g. gt_labels and gt_labels_ignore
             label_key = self.bbox2label.get(key)
             if label_key in results:
-                results[label_key] = results[label_key][valid_inds]
+                try:
+                    results[label_key] = results[label_key][valid_inds]
+                except TypeError as e:
+                    results[label_key] = np.array(results[label_key], dtype='float32')[valid_inds]
 
             # mask fields, e.g. gt_masks and gt_masks_ignore
             mask_key = self.bbox2mask.get(key)

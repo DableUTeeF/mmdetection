@@ -116,17 +116,17 @@ class HungarianAssigner(BaseAssigner):
         # NLL is used, we approximate it in 1 - cls_score[gt_label].
         # The 1 is a constant that doesn't change the matching,
         # so it can be ommitted.
+        gt_labels = gt_labels.long()
+
         cls_score = cls_pred.softmax(-1)
         cls_cost = -cls_score[:, gt_labels]  # [num_bboxes, num_gt]
 
         # regression L1 cost
         img_h, img_w, _ = img_meta['img_shape']
-        factor = torch.Tensor([img_w, img_h, img_w,
-                               img_h]).unsqueeze(0).to(gt_bboxes.device)
+        factor = torch.Tensor([img_w, img_h, img_w, img_h]).unsqueeze(0).to(gt_bboxes.device)
         gt_bboxes_normalized = gt_bboxes / factor
-        bbox_cost = torch.cdist(
-            bbox_pred, bbox_xyxy_to_cxcywh(gt_bboxes_normalized),
-            p=1)  # [num_bboxes, num_gt]
+        gt_bboxes_normalized = gt_bboxes_normalized.float()
+        bbox_cost = torch.cdist(bbox_pred, bbox_xyxy_to_cxcywh(gt_bboxes_normalized), p=1)  # [num_bboxes, num_gt]
 
         # regression iou cost, defaultly giou is used in official DETR.
         bboxes = bbox_cxcywh_to_xyxy(bbox_pred) * factor

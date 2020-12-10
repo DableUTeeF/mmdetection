@@ -1,3 +1,4 @@
+from mmdet.apis import inference_detector, init_detector, show_result_pyplot
 import copy
 import os.path as osp
 from mmdet.apis import set_random_seed
@@ -44,14 +45,14 @@ if __name__ == '__main__':
 
     # We can still use the pre-trained Mask RCNN model though we do not need to
     # use the mask branch
-    cfg.load_from = 'checkpoints/detr_r50_8x2_150e_coco_20201130_194835-2c4b8974.pth'
+    # cfg.load_from = 'checkpoints/detr_r50_8x2_150e_coco_20201130_194835-2c4b8974.pth'
 
     # Set up working dir to save files and logs.
-    cfg.work_dir = './tutorial_exps2'
+    cfg.work_dir = './tutorial_exps'
 
     # The original learning rate (LR) is set for 8-GPU training.
     # We divide it by 8 since we only use one GPU.
-    cfg.optimizer.lr = cfg.optimizer.lr / 8
+    cfg.optimizer.lr = 0.02 / 8
     cfg.lr_config.warmup = None
     cfg.log_config.interval = 10
 
@@ -76,11 +77,10 @@ if __name__ == '__main__':
     datasets = [build_dataset(cfg.data.train)]
 
     # Build the detector
-    model = build_detector(
-        cfg.model, train_cfg=cfg.train_cfg, test_cfg=cfg.test_cfg)
-    # Add an attribute for visualization convenience
-    model.CLASSES = datasets[0].CLASSES
+    model = init_detector(cfg, '/home/palm/PycharmProjects/mmdetection/tutorial_exps/epoch_24.pth', device='cpu')
+    # test a single image
+    result = inference_detector(model, '/media/palm/data/MicroAlgae/22_11_2020/images/00001.jpg')
+    # show the results
+    show_result_pyplot(model, '/media/palm/data/MicroAlgae/22_11_2020/images/00001.jpg', result, score_thr=0.3)
 
-    # Create work_dir
-    mmcv.mkdir_or_exist(osp.abspath(cfg.work_dir))
-    train_detector(model, datasets, cfg, distributed=False, validate=False)
+

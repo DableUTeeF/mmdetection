@@ -494,7 +494,7 @@ class TransformerHead(AnchorFreeHead):
                 - pos_inds (Tensor): Sampled positive indices for each image.
                 - neg_inds (Tensor): Sampled negative indices for each image.
         """
-
+        gt_labels = gt_labels.long()
         num_bboxes = bbox_pred.size(0)
         # assigner and sampler
         assign_result = self.assigner.assign(bbox_pred, cls_score, gt_bboxes,
@@ -525,6 +525,7 @@ class TransformerHead(AnchorFreeHead):
                                        img_h]).unsqueeze(0)
         pos_gt_bboxes_normalized = sampling_result.pos_gt_bboxes / factor
         pos_gt_bboxes_targets = bbox_xyxy_to_cxcywh(pos_gt_bboxes_normalized)
+        pos_gt_bboxes_targets = pos_gt_bboxes_targets.float()
         bbox_targets[pos_inds] = pos_gt_bboxes_targets
         return (labels, label_weights, bbox_targets, bbox_weights, pos_inds,
                 neg_inds)

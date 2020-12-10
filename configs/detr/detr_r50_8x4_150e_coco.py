@@ -15,7 +15,7 @@ model = dict(
         style='pytorch'),
     bbox_head=dict(
         type='TransformerHead',
-        num_classes=80,
+        num_classes=2,
         in_channels=2048,
         num_fcs=2,
         transformer=dict(
@@ -111,7 +111,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=4,
+    samples_per_gpu=2,
     workers_per_gpu=4,
     train=dict(pipeline=train_pipeline),
     val=dict(pipeline=test_pipeline),
